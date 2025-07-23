@@ -28,6 +28,14 @@ public class JwtAuthFilter implements GatewayFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        String path = exchange.getRequest().getPath().toString();
+        HttpMethod method = exchange.getRequest().getMethod();
+        
+        // Allow public endpoints without authentication
+        if (isPublicEndpoint(path, method)) {
+            return chain.filter(exchange);
+        }
+        
         String token = exchange.getRequest().getHeaders().getFirst("Authorization");
 
         if (token != null && token.startsWith("Bearer ")) {
@@ -42,8 +50,6 @@ public class JwtAuthFilter implements GatewayFilter {
 
                 String role = claims.get("role", String.class);
                 String gatewayKey = claims.get("gateway_key", String.class);
-                String path = exchange.getRequest().getPath().toString();
-                HttpMethod method = exchange.getRequest().getMethod();
 
                 if (!"trilhadeaprendizadoapims-gateway".equals(gatewayKey)) {
                     exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
@@ -70,6 +76,44 @@ public class JwtAuthFilter implements GatewayFilter {
         }
     }
 
+    private boolean isPublicEndpoint(String path, HttpMethod method) {
+        // Allow authentication endpoints
+        if (path.startsWith("/auth") && method == HttpMethod.POST) {
+            return true;
+        }
+        
+        // Allow user registration endpoints
+        if (path.equals("/usuario/aluno") && method == HttpMethod.POST) {
+            return true;
+        }
+        
+        if (path.equals("/usuario/admin") && method == HttpMethod.POST) {
+            return true;
+        }
+        
+        // Allow service-to-service communication for trilha modules
+        if (path.matches("/trilha/\\d+/modulos-ids") && method == HttpMethod.GET) {
+            return true;
+        }
+        
+        // Allow service-to-service communication for trilha conquista
+        if (path.matches("/trilha/\\d+/trilha-conquista-detalhada") && method == HttpMethod.GET) {
+            return true;
+        }
+        
+        // Allow service-to-service communication for modulo conquista
+        if (path.matches("/trilha/modulo-conquista-detalhada/\\d+") && method == HttpMethod.GET) {
+            return true;
+        }
+        
+        // Allow service-to-service communication for user XP updates
+        if (path.matches("/usuario/aluno/\\d+/add-xp") && method == HttpMethod.PUT) {
+            return true;
+        }
+        
+        return false;
+    }
+
     private boolean isAuthorized(String role, String path, HttpMethod method) {
 
         if ("temporario".equalsIgnoreCase(role) && method == HttpMethod.GET) {
@@ -91,6 +135,11 @@ public class JwtAuthFilter implements GatewayFilter {
 
             if (path.startsWith("/progresso") &&
                     (method == HttpMethod.GET || method == HttpMethod.POST || method == HttpMethod.PUT)) {
+                return true;
+            }
+            
+            // Allow alunos to access their own user data
+            if (path.startsWith("/usuario/aluno") && method == HttpMethod.GET) {
                 return true;
             }
 
