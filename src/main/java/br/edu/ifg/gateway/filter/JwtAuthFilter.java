@@ -31,7 +31,6 @@ public class JwtAuthFilter implements GatewayFilter {
         String path = exchange.getRequest().getPath().toString();
         HttpMethod method = exchange.getRequest().getMethod();
         
-        // Allow public endpoints without authentication
         if (isPublicEndpoint(path, method)) {
             return chain.filter(exchange);
         }
@@ -77,12 +76,10 @@ public class JwtAuthFilter implements GatewayFilter {
     }
 
     private boolean isPublicEndpoint(String path, HttpMethod method) {
-        // Allow authentication endpoints
         if (path.startsWith("/auth") && method == HttpMethod.POST) {
             return true;
         }
         
-        // Allow user registration endpoints
         if (path.equals("/usuario/aluno") && method == HttpMethod.POST) {
             return true;
         }
@@ -91,22 +88,18 @@ public class JwtAuthFilter implements GatewayFilter {
             return true;
         }
         
-        // Allow service-to-service communication for trilha modules
         if (path.matches("/trilha/\\d+/modulos-ids") && method == HttpMethod.GET) {
             return true;
         }
         
-        // Allow service-to-service communication for trilha conquista
         if (path.matches("/trilha/\\d+/trilha-conquista-detalhada") && method == HttpMethod.GET) {
             return true;
         }
         
-        // Allow service-to-service communication for modulo conquista
         if (path.matches("/trilha/modulo-conquista-detalhada/\\d+") && method == HttpMethod.GET) {
             return true;
         }
         
-        // Allow service-to-service communication for user XP updates
         if (path.matches("/usuario/aluno/\\d+/add-xp") && method == HttpMethod.PUT) {
             return true;
         }
@@ -138,7 +131,6 @@ public class JwtAuthFilter implements GatewayFilter {
                 return true;
             }
             
-            // Allow alunos to access their own user data
             if (path.startsWith("/usuario/aluno") && method == HttpMethod.GET) {
                 return true;
             }

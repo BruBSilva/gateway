@@ -19,10 +19,9 @@ public class CorsConfig {
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
         
-        // Allow specific origins
         corsConfig.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000",
-            "http://localhost:5173",  // Vite default port
+            "http://localhost:5173",  // Porta do VITE (react)
             "http://127.0.0.1:3001"
         ));
         
