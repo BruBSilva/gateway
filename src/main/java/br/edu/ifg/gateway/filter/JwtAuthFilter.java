@@ -28,6 +28,13 @@ public class JwtAuthFilter implements GatewayFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        String path = exchange.getRequest().getPath().toString();
+        HttpMethod method = exchange.getRequest().getMethod();
+        
+        if (isPublicEndpoint(path, method)) {
+            return chain.filter(exchange);
+        }
+        
         String token = exchange.getRequest().getHeaders().getFirst("Authorization");
 
         if (token != null && token.startsWith("Bearer ")) {
@@ -42,8 +49,6 @@ public class JwtAuthFilter implements GatewayFilter {
 
                 String role = claims.get("role", String.class);
                 String gatewayKey = claims.get("gateway_key", String.class);
-                String path = exchange.getRequest().getPath().toString();
-                HttpMethod method = exchange.getRequest().getMethod();
 
                 if (!"trilhadeaprendizadoapims-gateway".equals(gatewayKey)) {
                     exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
@@ -70,6 +75,38 @@ public class JwtAuthFilter implements GatewayFilter {
         }
     }
 
+    private boolean isPublicEndpoint(String path, HttpMethod method) {
+        if (path.startsWith("/auth") && method == HttpMethod.POST) {
+            return true;
+        }
+        
+        if (path.equals("/usuario/aluno") && method == HttpMethod.POST) {
+            return true;
+        }
+        
+        if (path.equals("/usuario/admin") && method == HttpMethod.POST) {
+            return true;
+        }
+        
+        if (path.matches("/trilha/\\d+/modulos-ids") && method == HttpMethod.GET) {
+            return true;
+        }
+        
+        if (path.matches("/trilha/\\d+/trilha-conquista-detalhada") && method == HttpMethod.GET) {
+            return true;
+        }
+        
+        if (path.matches("/trilha/modulo-conquista-detalhada/\\d+") && method == HttpMethod.GET) {
+            return true;
+        }
+        
+        if (path.matches("/usuario/aluno/\\d+/add-xp") && method == HttpMethod.PUT) {
+            return true;
+        }
+        
+        return false;
+    }
+
     private boolean isAuthorized(String role, String path, HttpMethod method) {
 
         if ("temporario".equalsIgnoreCase(role) && method == HttpMethod.GET) {
@@ -91,6 +128,10 @@ public class JwtAuthFilter implements GatewayFilter {
 
             if (path.startsWith("/progresso") &&
                     (method == HttpMethod.GET || method == HttpMethod.POST || method == HttpMethod.PUT)) {
+                return true;
+            }
+            
+            if (path.startsWith("/usuario/aluno") && method == HttpMethod.GET) {
                 return true;
             }
 
