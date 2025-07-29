@@ -48,12 +48,6 @@ public class JwtAuthFilter implements GatewayFilter {
                         .getBody();
 
                 String role = claims.get("role", String.class);
-                String gatewayKey = claims.get("gateway_key", String.class);
-
-                if (!"trilhadeaprendizadoapims-gateway".equals(gatewayKey)) {
-                    exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
-                    return exchange.getResponse().setComplete();
-                }
 
                 if (isAuthorized(role, path, method)) {
                     return chain.filter(exchange);
