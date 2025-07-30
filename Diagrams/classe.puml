@@ -1,0 +1,5 @@
+@startuml
+    class CorsConfig
+    class GatewayRoutes
+    class JwtAuthFilter
+@enduml

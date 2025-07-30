@@ -19,15 +19,16 @@ public class GatewayRoutes {
     public RouteLocator routeLocator(RouteLocatorBuilder builder) {
         return builder.routes()
                 .route("usuario", r -> r.path("/usuario/**")
-                        .filters(f -> f.filter(jwtFilter))
+                        .filters(f -> f.filter(jwtFilter).addRequestHeader("X-Gateway-Key", "trilhadeaprendizadoapims-gateway"))
                         .uri("http://localhost:8081"))
                 .route("learning", r -> r.path("/progresso/**")
-                        .filters(f -> f.filter(jwtFilter))
+                        .filters(f -> f.filter(jwtFilter).addRequestHeader("X-Gateway-Key", "trilhadeaprendizadoapims-gateway"))
                         .uri("http://localhost:8082"))
                 .route("trilha", r -> r.path("/trilha/**")
-                        .filters(f -> f.filter(jwtFilter))
+                        .filters(f -> f.filter(jwtFilter).addRequestHeader("X-Gateway-Key", "trilhadeaprendizadoapims-gateway"))
                         .uri("http://localhost:8083"))
                 .route("autenticacao", r -> r.path("/auth/**")
+                        .filters(f -> f.addRequestHeader("X-Gateway-Key", "trilhadeaprendizadoapims-gateway"))
                         .uri("http://localhost:8084"))
                 .build();
     }

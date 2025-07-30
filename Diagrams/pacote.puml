@@ -1,0 +1,23 @@
+@startuml
+left to right direction
+title Estrutura de Pacotes do Gateway
+
+' Organização de pacotes
+package br {
+    package edu {
+        package ifg {
+              package trilhadeaprendizagemapi {
+                    package config {
+                        class Configuracao
+                        class GatewayRoutes
+                    }
+
+                    package filter {
+                        class JwtAuthFilter
+                    }
+              }
+        }
+    }
+}
+
+@enduml

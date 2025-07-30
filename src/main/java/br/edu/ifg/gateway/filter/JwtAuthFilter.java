@@ -48,6 +48,7 @@ public class JwtAuthFilter implements GatewayFilter {
                         .getBody();
 
                 String role = claims.get("role", String.class);
+
                 String serviceOrigin = claims.get("service_origin", String.class);
 
                 if (isAuthorized(role, path, method, serviceOrigin)) {
