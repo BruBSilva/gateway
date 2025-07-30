@@ -48,14 +48,9 @@ public class JwtAuthFilter implements GatewayFilter {
                         .getBody();
 
                 String role = claims.get("role", String.class);
-                String gatewayKey = claims.get("gateway_key", String.class);
+                String serviceOrigin = claims.get("service_origin", String.class);
 
-                if (!"trilhadeaprendizadoapims-gateway".equals(gatewayKey)) {
-                    exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
-                    return exchange.getResponse().setComplete();
-                }
-
-                if (isAuthorized(role, path, method)) {
+                if (isAuthorized(role, path, method, serviceOrigin)) {
                     return chain.filter(exchange);
                 } else {
                     exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
@@ -76,10 +71,12 @@ public class JwtAuthFilter implements GatewayFilter {
     }
 
     private boolean isPublicEndpoint(String path, HttpMethod method) {
+        // Autenticação, é necessário para o login
         if (path.startsWith("/auth") && method == HttpMethod.POST) {
             return true;
         }
         
+        // Registro de usuários, necessário pra criar conta
         if (path.equals("/usuario/aluno") && method == HttpMethod.POST) {
             return true;
         }
@@ -88,30 +85,19 @@ public class JwtAuthFilter implements GatewayFilter {
             return true;
         }
         
-        if (path.matches("/trilha/\\d+/modulos-ids") && method == HttpMethod.GET) {
+        // Verificação de email, necessário pra login, o usuário ainda não vai ter JWT
+        if (path.matches("/usuario/aluno/email/.+") && method == HttpMethod.GET) {
             return true;
         }
         
-        if (path.matches("/trilha/\\d+/trilha-conquista-detalhada") && method == HttpMethod.GET) {
-            return true;
-        }
-        
-        if (path.matches("/trilha/modulo-conquista-detalhada/\\d+") && method == HttpMethod.GET) {
-            return true;
-        }
-        
-        if (path.matches("/usuario/aluno/\\d+/add-xp") && method == HttpMethod.PUT) {
+        if (path.matches("/usuario/admin/email/.+") && method == HttpMethod.GET) {
             return true;
         }
         
         return false;
     }
 
-    private boolean isAuthorized(String role, String path, HttpMethod method) {
-
-        if ("temporario".equalsIgnoreCase(role) && method == HttpMethod.GET) {
-            return true;
-        }
+    private boolean isAuthorized(String role, String path, HttpMethod method, String serviceOrigin) {
 
         if (path.startsWith("/auth") && method != HttpMethod.POST) {
             return false;
@@ -132,6 +118,10 @@ public class JwtAuthFilter implements GatewayFilter {
             }
             
             if (path.startsWith("/usuario/aluno") && method == HttpMethod.GET) {
+                return true;
+            }
+
+            if (path.matches("/usuario/aluno/\\d+/add-xp") && method == HttpMethod.PUT) {
                 return true;
             }
 
