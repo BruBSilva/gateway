@@ -49,9 +49,7 @@ public class JwtAuthFilter implements GatewayFilter {
 
                 String role = claims.get("role", String.class);
 
-                String serviceOrigin = claims.get("service_origin", String.class);
-
-                if (isAuthorized(role, path, method, serviceOrigin)) {
+                if (isAuthorized(role, path, method)) {
                     return chain.filter(exchange);
                 } else {
                     exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
@@ -98,7 +96,7 @@ public class JwtAuthFilter implements GatewayFilter {
         return false;
     }
 
-    private boolean isAuthorized(String role, String path, HttpMethod method, String serviceOrigin) {
+    private boolean isAuthorized(String role, String path, HttpMethod method) {
 
         if (path.startsWith("/auth") && method != HttpMethod.POST) {
             return false;
